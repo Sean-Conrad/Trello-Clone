@@ -1,13 +1,16 @@
-import {useState, useEffect} from 'react'
+import {useEffect} from 'react'
 import {DragDropContext, Draggable, Droppable} from "react-beautiful-dnd"
+import { useListsContext } from '../hooks/useListsContext'
 
 
 //components
 import Lists from '../components/Lists'
 import AddListForm from '../components/AddListForm'
 
+
 const Home = () => {
-    const [lists, setLists] = useState(null) //local state
+    const {lists, dispatch} = useListsContext()
+    //const [lists, setLists] = useState(null)
 
     useEffect(() => {
         const fetchLists = async () => {
@@ -15,12 +18,13 @@ const Home = () => {
             const json = await response.json() //data needs to become parsed as an array of objects
 
             if(response.ok){
-                setLists(json)
+                //setLists(json)
+                dispatch({type: 'SET_LISTS', payload: json})
             }
         }
 
         fetchLists()
-    }, [])
+    }, [dispatch])
 
     const handleDragDrop = (results) => {
         const {source, destination, type} = results;
@@ -28,16 +32,24 @@ const Home = () => {
 
         if(!destination) return;
 
+        //if in the same list and task hasn't moved, do nothing
         if(destination.droppableId === source.droppableId && source.index === destination.index) return;
+
 
         if(type === 'group'){
             const reorderdedLists = [...lists];
             const sourceIndex = source.index;
             const destinationIndex = destination.index;
 
+            //delete list from its original index
             const [removedList] = reorderdedLists.splice(sourceIndex, 1)
+            //add list to its new index
             reorderdedLists.splice(destinationIndex, 0, removedList);
-            return setLists(reorderdedLists)
+
+            console.log(JSON.stringify(reorderdedLists))
+            return dispatch({type: 'SET_LISTS', payload: reorderdedLists})
+            //return setLists(reorderedLists)
+            
         }
 
         const listSourceIndex = lists.findIndex(
@@ -69,8 +81,8 @@ const Home = () => {
                 ...lists[listDestinationIndex],
                 tasks: newDestinationTasks
             }
-
-            setLists(newLists)
+            dispatch({type: 'SET_LISTS', payload: newLists})
+            
 
             const updateDatabase = async () => {
                 await fetch(`api/lists/${source.droppableId}`, {
@@ -89,7 +101,6 @@ const Home = () => {
 
     return (
         <div className="home">
-            <h1>WELCOME</h1>
             <AddListForm />
                 <DragDropContext onDragEnd={handleDragDrop}>
                 <div>
@@ -114,7 +125,9 @@ const Home = () => {
                                                     {...provided.draggableProps} 
                                                     ref={provided.innerRef}
                                                 >
+                                                    
                                                     <h2><Lists key={list._id} list={list}/></h2>
+                                                    
                                                 </div>  
                                         )}
                                     </Draggable>                    

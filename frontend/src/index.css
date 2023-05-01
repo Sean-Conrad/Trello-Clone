@@ -32,3 +32,36 @@ h1 {
   display: flex;
   justify-content: center;
 }
+
+.home{
+  background-color: #1a93a3;
+}
+
+.card-container{
+  
+}
+
+.input{
+  width: 75%;
+}
+
+.card-text{
+  font-size: 20px;
+}
+
+.create{
+  font-size: 20px;
+  
+}
+
+.task-item{
+  margin-top: 15px;
+}
+
+.icon{
+  float: right;
+  font-size: 20px;
+}
+.icon:hover{
+  color: blue;
+}

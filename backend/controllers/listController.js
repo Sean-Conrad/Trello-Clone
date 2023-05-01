@@ -24,7 +24,8 @@ const createList = async(req, res) => {
 const deleteList = async(req, res) => {
     const {id} = req.params
     if(!mongoose.Types.ObjectId.isValid(id)){
-        return res.status(404).json({error: 'No such list exists'})
+        return res.status(404).json({error:
+             'No such list exists'})
     }
 
     const list = await List.findOneAndDelete({_id: id})
@@ -34,6 +35,42 @@ const deleteList = async(req, res) => {
     }
 
     res.status(200).json(list)
+}
+
+const addTask = async(req, res) => {
+    const {id} = req.params
+    const {taskName} = req.body
+    
+    console.log(id)
+    console.log(taskName)
+
+    if(!mongoose.Types.ObjectId.isValid(id)){
+        return res.status(404).json({error: 'No such list exists'})
+    }
+
+    const task = await List.updateOne(
+        {_id: id}, {$push: {tasks: { name: taskName }}}, {new: true})
+
+    res.status(200).json(task)
+}
+
+//delete a task
+const deleteTask = async(req, res) => {
+    const {id} = req.params
+    const {taskId} = req.body
+
+    if(!mongoose.Types.ObjectId.isValid(id)){
+        return res.status(404).json({error: 'No such list exists'})
+    }
+
+    const task = await List.updateOne(
+        {_id: id}, {$pull: {tasks: { _id: taskId}}}, {new: true})
+
+    if(!task) {
+        return res.status(404).json({error: 'No such task exists'})
+    }
+
+    res.status(200).json(task)
 }
 
 //update a list
@@ -60,6 +97,8 @@ const updateList = async(req, res) => {
 module.exports = {
     getLists,
     createList,
+    addTask,
     deleteList,
-    updateList
+    deleteTask,
+    updateList,
 }

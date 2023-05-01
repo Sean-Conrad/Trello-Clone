@@ -1,42 +1,45 @@
 import {useState} from 'react'
 import {useListsContext} from '../hooks/useListsContext'
 
-const AddListForm = () => {
+const AddTaskForm = ({list}) => {
     const {lists, dispatch} = useListsContext()
-    const [title, setTitle] = useState('')
+    const [name, setName] = useState('')
     const [error, setError] = useState(null)
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        const tasks = []
-        const list = {title, tasks}
-        const response = await fetch('/api/lists', {
+        const data = {
+            taskName : name,
+            listId : list._id
+        }
+        const response = await fetch(`/api/lists/${list._id}/task`, {
             method: 'POST',
-            body: JSON.stringify(list),
             headers: {
                 'Content-type': 'application/json'
-            }
+            },
+            body: JSON.stringify(data),
+
         })
         const json = await response.json()
         if(!response.ok){
             setError(json.error)
         }
         if(response.ok){
-            dispatch({type: 'CREATE_LISTS', payload:json})
+            dispatch({type: 'ADD_TASK', payload:data})
             setError(null)
-            setTitle('')
-            console.log('new list added')
+            setName('')
+            console.log('new task added')
         }
     }
 
     return(
         <form className='create' onSubmit={handleSubmit}>
-            <h3>Add a New List</h3>
-            <label>List Title:</label>
+            <label>Task Name:</label>
             <input 
+                className="input"
                 type="text"
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
+                onChange={(e) => setName(e.target.value)}
+                value={name}
             />
 
             <button >Add</button>
@@ -44,4 +47,4 @@ const AddListForm = () => {
     )
 }
 
-export default AddListForm
+export default AddTaskForm
